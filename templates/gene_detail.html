@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ gene.symbol if gene else 'Gene' }} | Space BioSearch{% endblock %}
+
+{% block content %}
+<section class="relative flex flex-col items-center justify-center min-h-screen text-white overflow-hidden bg-black">
+  <!-- Background Glow -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black via-green-950/20 to-black"></div>
+  <div class="absolute w-full h-full bg-[radial-gradient(circle_at_center,_rgba(34,197,94,0.1)_0%,_transparent_70%)] animate-pulse-slow"></div>
+  <div class="absolute inset-0"><canvas id="particles"></canvas></div>
+
+  <div class="relative z-10 w-full max-w-5xl mx-auto text-center">
+    {% if gene %}
+      <!-- Header -->
+      <h1 class="text-6xl md:text-7xl font-extrabold text-green-400 mb-4">{{ gene.symbol }}</h1>
+      <p class="text-gray-300 text-lg italic mb-10">{{ gene.genename }}</p>
+
+      <!-- Main Info Card -->
+      <div class="border border-green-500/40 rounded-3xl bg-black/70 backdrop-blur-md p-8 md:p-12 shadow-[0_0_30px_rgba(34,197,94,0.3)] transition-all duration-700 hover:shadow-[0_0_50px_rgba(34,197,94,0.5)]">
+        <div class="grid md:grid-cols-2 gap-10 items-center">
+          <!-- Details -->
+          <div class="text-left space-y-3 animate-fade-in-up">
+            <p><span class="text-green-400 font-semibold">Log2FC:</span> {{ "%.4f"|format(gene.log2fc or 0) }}</p>
+            <p><span class="text-green-400 font-semibold">p-value:</span> {{ "%.4e"|format(gene.p_value or 0) }}</p>
+            <p><span class="text-green-400 font-semibold">Mean:</span> {{ "%.4f"|format(gene.mean or 0) }}</p>
+
+            <div class="mt-10 space-y-4">
+              <a href="/download/{{ gene.symbol|lower }}"
+                 class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black font-semibold px-6 py-3 rounded-xl shadow-lg shadow-green-500/40 transition-transform transform hover:scale-105">
+                ⬇ Download CSV
+              </a>
+              <a href="/" class="block text-green-400 hover:text-green-300 underline text-sm transition">
+                ← Back to Search
+              </a>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div class="animate-fade-in-slow">
+            <canvas id="geneChart" class="w-full h-72"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🧠 AI Summary Section (Separate Card) -->
+      <div class="mt-10 text-center animate-fade-in-up">
+        <button id="generateAI"
+                class="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold px-8 py-3 rounded-xl shadow-lg shadow-purple-500/30 transition-transform transform hover:scale-105">
+          🧠 Generate AI Summary
+        </button>
+      </div>
+
+      <!-- AI Summary Output -->
+      <div id="aiSummary"
+           class="hidden mt-6 border border-purple-400/40 bg-black/70 backdrop-blur-md p-6 rounded-2xl shadow-lg shadow-purple-500/30 text-left leading-relaxed max-w-4xl mx-auto animate-fade-in-up">
+      </div>
+    {% else %}
+      <div class="py-40">
+        <h2 class="text-3xl text-red-400">No data found</h2>
+        <a href="/" class="text-green-400 mt-4 block">← Back to Search</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  {% if gene %}
+    const labels = {{ gene['chart']['labels'] | tojson }};
+    const values = {{ gene['chart']['values'] | tojson }};
+
+    const ctx = document.getElementById('geneChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: 'Expression', data: values, backgroundColor: ['#22c55e','#0ea5e9'], borderRadius: 10 }] },
+      options: {
+        plugins: { legend: { labels: { color: '#e5e7eb' } } },
+        scales: {
+          x: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' } },
+          y: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' } }
+        }
+      }
+    });
+
+    // 🧠 AI Summary Button Action
+    const aiBtn = document.getElementById('generateAI');
+    const aiBox = document.getElementById('aiSummary');
+
+    aiBtn.addEventListener('click', async () => {
+      aiBtn.disabled = true;
+      aiBtn.innerText = "⏳ Generating AI Summary...";
+      aiBox.classList.add("hidden");
+
+      try {
+        const res = await fetch(`/ai_summary/{{ gene.symbol|lower }}`);
+        const data = await res.json();
+        aiBox.innerHTML = `<h3 class='text-purple-400 font-semibold mb-2'>AI-Generated Summary:</h3><p>${data.summary}</p>`;
+        aiBox.classList.remove("hidden");
+      } catch (err) {
+        aiBox.innerHTML = "<p class='text-red-400'>❌ Error generating summary.</p>";
+        aiBox.classList.remove("hidden");
+      } finally {
+        aiBtn.disabled = false;
+        aiBtn.innerText = "🧠 Generate AI Summary";
+      }
+    });
+  {% endif %}
+
+  // ✨ Background Animation
+  const canvas = document.getElementById("particles");
+  const ctx2 = canvas.getContext("2d");
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  let particlesArray = [];
+  class Particle {
+    constructor(){ this.x=Math.random()*canvas.width; this.y=Math.random()*canvas.height;
+      this.size=Math.random()*2; this.speedX=Math.random()*0.5-0.25; this.speedY=Math.random()*0.5-0.25; }
+    update(){ this.x+=this.speedX; this.y+=this.speedY;
+      if(this.x>canvas.width)this.x=0; if(this.x<0)this.x=canvas.width;
+      if(this.y>canvas.height)this.y=0; if(this.y<0)this.y=canvas.height;}
+    draw(){ ctx2.fillStyle="rgba(168,85,247,0.3)"; ctx2.beginPath(); ctx2.arc(this.x,this.y,this.size,0,Math.PI*2); ctx2.fill();}
+  }
+  function initParticles(){ particlesArray=[]; for(let i=0;i<80;i++){ particlesArray.push(new Particle()); } }
+  function animateParticles(){ ctx2.clearRect(0,0,canvas.width,canvas.height);
+    particlesArray.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(animateParticles);}
+  initParticles(); animateParticles();
+</script>
+
+<style>
+  @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade-in-up { animation: fade-in-up 1s ease forwards; }
+  .animate-fade-in-slow { animation: fade-in-up 1.5s ease forwards; opacity: 0; }
+  @keyframes pulse-slow { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+  .animate-pulse-slow { animation: pulse-slow 6s infinite ease-in-out; }
+</style>
+{% endblock %}

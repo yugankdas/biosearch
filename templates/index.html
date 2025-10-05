@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% block title %}Home | Space BioSearch{% endblock %}
+
+{% block content %}
+<section
+  class="relative flex flex-col items-center justify-center text-center min-h-screen px-6 bg-cover bg-center"
+  style="background-image: url('{{ url_for('static', filename='images/space-bg.jpg') }}');"
+>
+  <div class="absolute inset-0 bg-black/60"></div>
+
+  <div class="relative z-10 max-w-3xl mx-auto">
+    <p
+      class="text-green-400 uppercase tracking-widest text-sm mb-4 glow-text"
+      data-aos="zoom-in"
+    >
+      NASA Space Apps Challenge 2025
+    </p>
+
+    <h2
+      class="text-5xl md:text-6xl font-extrabold text-green-300 mb-6 glow-title"
+      data-aos="zoom-in"
+    >
+      Exploring Life Beyond Earth
+    </h2>
+
+    <p
+      class="text-gray-300 max-w-2xl text-lg mb-8 glow-sub"
+      data-aos="zoom-in"
+    >
+      Search, visualize, and explore NASA’s biological datasets to discover how
+      life adapts in space.
+    </p>
+
+    <!-- 🔍 Search Bar + Suggestions -->
+    <div class="relative flex flex-col md:flex-row gap-4 justify-center items-center mb-10 z-50">
+      <div class="relative w-full md:w-[500px]">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search gene..."
+          class="w-full border border-green-400/40 bg-black/70 text-gray-200 text-lg rounded-xl px-6 py-4 focus:ring focus:ring-green-400 outline-none shadow-lg shadow-green-500/10"
+          data-aos="zoom-in"
+          autocomplete="off"
+        />
+        <!-- 🔽 Suggestion dropdown (auto-generated) -->
+        <div
+          id="suggestionBox"
+          class="absolute left-0 top-full bg-black/90 border border-green-400/40 rounded-xl mt-2 w-full text-left text-gray-200 shadow-lg shadow-green-500/10 z-50 hidden"
+        ></div>
+      </div>
+
+      <button
+        id="searchBtn"
+        class="bg-green-500 hover:bg-green-600 text-black font-semibold text-lg px-6 py-4 rounded-xl glow-btn"
+        data-aos="zoom-in"
+      >
+        Search
+      </button>
+    </div>
+
+    <div id="searchResults" class="mt-6"></div>
+
+    <!-- 🧬 Animated Fun Fact Boxes -->
+    <div
+      id="factContainer"
+      class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4 text-left transition-all duration-500"
+      data-aos="zoom-in-up"
+    >
+      <div
+        class="fact-box bg-black/70 border border-green-400/40 rounded-2xl p-6 shadow-lg shadow-green-500/10 cursor-pointer overflow-hidden transition-all duration-500"
+      >
+        <h3 class="text-green-400 font-semibold mb-2 text-lg">
+          🧬 Life & Biology in Space
+        </h3>
+        <p
+          id="fact1"
+          class="fact-text text-gray-200 text-sm leading-relaxed transition-opacity duration-700"
+        ></p>
+      </div>
+
+      <div
+        class="fact-box bg-black/70 border border-green-400/40 rounded-2xl p-6 shadow-lg shadow-green-500/10 cursor-pointer overflow-hidden transition-all duration-500"
+      >
+        <h3 class="text-green-400 font-semibold mb-2 text-lg">
+          🌍 Life Beyond Earth
+        </h3>
+        <p
+          id="fact2"
+          class="fact-text text-gray-200 text-sm leading-relaxed transition-opacity duration-700"
+        ></p>
+      </div>
+
+      <div
+        class="fact-box bg-black/70 border border-green-400/40 rounded-2xl p-6 shadow-lg shadow-green-500/10 cursor-pointer overflow-hidden transition-all duration-500"
+      >
+        <h3 class="text-green-400 font-semibold mb-2 text-lg">
+          🚀 Space Medicine & Biotech
+        </h3>
+        <p
+          id="fact3"
+          class="fact-text text-gray-200 text-sm leading-relaxed transition-opacity duration-700"
+        ></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 🌌 Styling Section -->
+<style>
+  .fact-box {
+    position: relative;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
+    transform-style: preserve-3d;
+  }
+
+  .fact-box {
+    transform: scale(1);
+    z-index: 1;
+  }
+
+  .fact-box.hovered {
+    transform: scale(1.15);
+    z-index: 10;
+    box-shadow:
+      0 0 25px #00ff00,
+      0 0 50px #00ff00,
+      0 0 80px #00ff00;
+  }
+
+  .fact-box.dimmed {
+    transform: scale(0.8);
+    opacity: 0.5;
+    z-index: 0;
+    filter: blur(1px);
+  }
+
+  @keyframes neonPulse {
+    0% {
+      box-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
+    }
+    50% {
+      box-shadow: 0 0 35px #00ff00, 0 0 70px #00ff00;
+    }
+    100% {
+      box-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
+    }
+  }
+
+  /* 🔍 Suggestion dropdown styling */
+  #suggestionBox {
+    position: absolute;
+    backdrop-filter: blur(6px);
+    max-height: 220px;
+    overflow-y: auto;
+    border-radius: 0.75rem;
+    z-index: 999;
+    animation: fadeIn 0.25s ease-in-out;
+  }
+
+  .suggestion-item {
+    transition: background 0.2s ease-in-out;
+  }
+
+  .suggestion-item:hover {
+    background: rgba(34, 197, 94, 0.3);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<!-- 🚀 Combined Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // ---------- FACT ROTATION ----------
+    const facts = {
+      fact1: [
+        "Tardigrades (water bears) can survive the vacuum of space, radiation, and freezing temperatures.",
+        "Human bones lose 1% density per month in microgravity — like accelerated osteoporosis.",
+        "Astronauts grow up to 2 inches taller in space since the spine stretches without gravity."
+      ],
+      fact2: [
+        "Mars may hold ancient microbial fossils — NASA’s Perseverance rover is collecting samples.",
+        "Europa and Enceladus have subsurface oceans that may harbor microbial life.",
+        "Amino acids — building blocks of life — have been found on meteorites."
+      ],
+      fact3: [
+        "Astronauts’ DNA expression changes due to space stress — shown in NASA’s Twin Study.",
+        "Scientists are testing 3D bioprinters on the ISS to print human tissues.",
+        "Melanin-producing fungi from Chernobyl could shield humans from cosmic radiation."
+      ]
+    };
+
+    const factEls = [
+      document.getElementById("fact1"),
+      document.getElementById("fact2"),
+      document.getElementById("fact3")
+    ];
+
+    let boxIndex = 0;
+    const factIndices = [0, 0, 0];
+
+    function updateNextFact() {
+      const el = factEls[boxIndex];
+      const key = "fact" + (boxIndex + 1);
+
+      el.style.opacity = 0;
+      el.style.transform = "scale(0.95)";
+      setTimeout(() => {
+        el.textContent = facts[key][factIndices[boxIndex] % facts[key].length];
+        el.style.opacity = 1;
+        el.style.transform = "scale(1.05)";
+        setTimeout(() => (el.style.transform = "scale(1)"), 300);
+        factIndices[boxIndex]++;
+        boxIndex = (boxIndex + 1) % factEls.length;
+      }, 400);
+    }
+
+    factEls.forEach((el, idx) => {
+      el.textContent = facts["fact" + (idx + 1)][0];
+    });
+    setInterval(updateNextFact, 4000);
+
+    // Hover effect
+    const factBoxes = document.querySelectorAll(".fact-box");
+    factBoxes.forEach((box) => {
+      box.addEventListener("mouseenter", () => {
+        box.classList.add("hovered");
+        factBoxes.forEach((other) => {
+          if (other !== box) other.classList.add("dimmed");
+        });
+      });
+      box.addEventListener("mouseleave", () => {
+        box.classList.remove("hovered");
+        factBoxes.forEach((other) => other.classList.remove("dimmed"));
+      });
+    });
+
+    // ---------- SEARCH AUTOCOMPLETE + REDIRECT ----------
+    const searchInput = document.querySelector("#searchInput");
+    const searchBtn = document.querySelector("#searchBtn");
+    const resultsContainer = document.querySelector("#searchResults");
+    const suggestionBox = document.querySelector("#suggestionBox");
+    let activeIndex = -1;
+
+    async function runSearch() {
+      const query = searchInput.value.trim();
+      if (!query) return;
+
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        if (data.length > 0) {
+          window.location.href = `/${encodeURIComponent(data[0].symbol)}`;
+          return;
+        }
+        resultsContainer.innerHTML = `
+          <div class="text-center mt-8 text-red-400 text-lg">
+            ❌ No results found for <b>${query}</b>.
+          </div>`;
+      } catch (err) {
+        console.error("Search error:", err);
+      }
+    }
+
+    async function showSuggestions(query) {
+      if (query.length < 2) {
+        suggestionBox.classList.add("hidden");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        if (data.length === 0) {
+          suggestionBox.classList.add("hidden");
+          return;
+        }
+
+        suggestionBox.innerHTML = data
+          .slice(0, 5)
+          .map(
+            (item) => `
+            <div class="suggestion-item px-4 py-2 hover:bg-green-500/30 cursor-pointer transition"
+                 data-symbol="${item.symbol}">
+              <span class="text-green-300 font-semibold">${item.symbol}</span>
+              <span class="text-gray-400 text-sm block">${item.genename}</span>
+            </div>`
+          )
+          .join("");
+
+        suggestionBox.classList.remove("hidden");
+
+        document.querySelectorAll(".suggestion-item").forEach((item) => {
+          item.addEventListener("click", () => {
+            const symbol = item.getAttribute("data-symbol");
+            window.location.href = `/${encodeURIComponent(symbol)}`;
+          });
+        });
+      } catch (err) {
+        console.error("Suggestion error:", err);
+      }
+    }
+
+    searchInput.addEventListener("input", (e) => {
+      showSuggestions(e.target.value.trim());
+    });
+
+    searchInput.addEventListener("keydown", (e) => {
+      const items = suggestionBox.querySelectorAll(".suggestion-item");
+      if (items.length === 0) return;
+      if (e.key === "ArrowDown") {
+        activeIndex = (activeIndex + 1) % items.length;
+      } else if (e.key === "ArrowUp") {
+        activeIndex = (activeIndex - 1 + items.length) % items.length;
+      } else if (e.key === "Enter") {
+        if (activeIndex >= 0 && items[activeIndex]) {
+          items[activeIndex].click();
+          e.preventDefault();
+          return;
+        } else {
+          runSearch();
+        }
+      }
+      items.forEach((item, i) => {
+        item.classList.toggle("bg-green-500/30", i === activeIndex);
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!suggestionBox.contains(e.target) && e.target !== searchInput) {
+        suggestionBox.classList.add("hidden");
+      }
+    });
+
+    searchBtn.addEventListener("click", runSearch);
+  });
+</script>
+{% endblock %}

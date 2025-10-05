@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Glossary | Space BioSearch{% endblock %}
+
+{% block content %}
+<section class="relative flex flex-col min-h-screen bg-cover bg-center px-6 py-16 overflow-hidden"
+         style="background-image: url('{{ url_for('static', filename='images/space-bg.jpg') }}');">
+  <!-- Overlay -->
+  <div class="absolute inset-0 bg-black/85 backdrop-blur-sm"></div>
+
+  <!-- Soft radial glow -->
+  <div class="absolute w-full h-full bg-[radial-gradient(circle_at_center,_rgba(34,197,94,0.12)_0%,_transparent_70%)] animate-pulse-slow"></div>
+
+  <!-- Particles canvas -->
+  <canvas id="particles" class="absolute inset-0 z-0"></canvas>
+
+  <div class="relative z-10 max-w-7xl mx-auto text-center">
+    <h1 class="text-5xl md:text-6xl font-extrabold text-green-400 mb-4 tracking-wide drop-shadow-[0_0_25px_rgba(34,197,94,0.8)] animate-fade-in-up">
+      Glossary
+    </h1>
+    <p class="text-gray-300 text-lg max-w-3xl mx-auto mb-10 animate-fade-in-slow">
+      A comprehensive list of space biology, genomics, biotech, instrumentation, and data science terms — powered for the NASA Space Apps Challenge.
+    </p>
+
+    <div class="flex justify-center mb-12 animate-fade-in-slow">
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="🔍 Search terms (100 total)..."
+        class="w-full md:w-[680px] border border-green-400/40 bg-black/70 text-gray-200 text-lg rounded-xl px-6 py-4 focus:ring focus:ring-green-400 outline-none shadow-lg shadow-green-500/10 transition-all duration-200"
+        onkeyup="filterTerms()"
+      />
+    </div>
+
+    <div id="glossaryContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 text-left"></div>
+  </div>
+</section>
+
+<script>
+  // ---------- 100 glossary terms ----------
+  const glossary = [
+    {term:"Apoptosis", definition:"Programmed cell death; can be modulated by radiation and microgravity."},
+    {term:"Astrobiology", definition:"Study of life’s origin, evolution, distribution, and future in the universe."},
+    {term:"Autophagy", definition:"Cellular self-digestion process to recycle damaged organelles and proteins."},
+    {term:"Amino Acid", definition:"Organic molecules that form proteins — building blocks of life."},
+    {term:"Allele", definition:"Alternative version of a gene at a specific locus."},
+    {term:"Antioxidant", definition:"Molecule that neutralizes reactive oxygen species, reducing oxidative stress."},
+    {term:"Aseptic Technique", definition:"Procedures to prevent contamination in biological experiments."},
+    {term:"Biosensor", definition:"Device that detects biological signals or biomarkers in real-time."},
+    {term:"Bioreactor", definition:"Controlled system for culturing cells, tissues, or microbes; used in space experiments."},
+    {term:"Bioassay", definition:"Experimental procedure measuring the effect of a substance on living organisms."},
+    {term:"Bioinformatics", definition:"Computational methods for analyzing biological data (genomics, proteomics, etc.)."},
+    {term:"Biomarker", definition:"Biological molecule indicating a physiological or pathological state."},
+    {term:"Bioprinting", definition:"3D printing of living tissues or scaffolds for regenerative medicine."},
+    {term:"Biomechanics", definition:"Study of mechanical principles in biological systems; important for astronaut health."},
+    {term:"Bioregenerative Life Support", definition:"Systems using biology to recycle air, water, and food in space habitats."},
+    {term:"ChIP-Seq", definition:"Technique to find DNA regions bound by specific proteins (chromatin immunoprecipitation sequencing)."},
+    {term:"Circadian Rhythm", definition:"Daily biological cycle regulating sleep and physiology; disrupted in space."},
+    {term:"Clonal Expansion", definition:"Growth of genetically identical cells from a single progenitor."},
+    {term:"CRISPR", definition:"Genome-editing technology enabling precise DNA alterations."},
+    {term:"Cytoskeleton", definition:"Cellular network giving structure and enabling intracellular transport; gravity-sensitive."},
+    {term:"Cytotoxicity", definition:"Toxic effect on cells, often measured in drug and radiation studies."},
+    {term:"Differential Expression", definition:"Analysis identifying genes with different expression across conditions."},
+    {term:"DNA Repair", definition:"Cellular mechanisms fixing DNA damage from radiation or replication errors."},
+    {term:"Drone Biology", definition:"(contextual) using autonomous vehicles for remote biological sampling/monitoring."},
+    {term:"Epigenetics", definition:"Heritable gene regulation changes without altering DNA sequence."},
+    {term:"Exobiology", definition:"Study of life beyond Earth and effects of space environment on organisms."},
+    {term:"Experiment Payload", definition:"Biological samples and instruments carried on a space mission."},
+    {term:"Fermentation", definition:"Microbial process for producing products; used in biomanufacturing in space."},
+    {term:"Flux Balance Analysis", definition:"Computational method to predict metabolic fluxes in networks."},
+    {term:"Flow Cytometry", definition:"Technique to measure cell properties and sort cells using lasers."},
+    {term:"Gene Expression", definition:"Process of transcribing DNA to RNA and translating to proteins."},
+    {term:"Gene Knockout", definition:"Genetic technique to disable a gene to study its function."},
+    {term:"Genotype", definition:"Genetic makeup of an organism."},
+    {term:"Genomics", definition:"Large-scale study of genomes and DNA sequence variation."},
+    {term:"Genome Assembly", definition:"Process of reconstructing a full genome from sequencing reads."},
+    {term:"Germ-free", definition:"Organisms raised without exposure to microbes for controlled studies."},
+    {term:"Gravitaxis", definition:"Movement of organisms or cells in response to gravity."},
+    {term:"Ground Control", definition:"Earth-based experiment run in parallel to spaceflight experiments for comparison."},
+    {term:"Habitat Microbiome", definition:"Community of microbes living within a spacecraft or habitat."},
+    {term:"High-throughput", definition:"Automated large-scale experiments (e.g., sequencing) for massive data output."},
+    {term:"Homeostasis", definition:"Ability to maintain stable internal conditions; challenged in spaceflight."},
+    {term:"Hypergravity", definition:"Conditions with gravity >1G used in centrifuge-based experiments."},
+    {term:"Immune Dysregulation", definition:"Altered immune function observed in astronauts during/after spaceflight."},
+    {term:"Immunoassay", definition:"Biochemical test using antibodies to detect specific molecules."},
+    {term:"In vitro", definition:"Experiments performed outside living organisms (in lab glassware)."},
+
+    {term:"In vivo", definition:"Experiments performed inside living organisms."},
+    {term:"Induced Pluripotent Stem Cell (iPSC)", definition:"Somatic cells reprogrammed to a pluripotent state for tissue modeling."},
+    {term:"Ionizing Radiation", definition:"High-energy radiation that can damage DNA (cosmic rays, solar particles)."},
+    {term:"Isobaric Tagging", definition:"Mass spec labeling technique for quantitative proteomics."},
+    {term:"Karyotype", definition:"Chromosome number and structure visualized for genome integrity checks."},
+    {term:"Lab-on-a-Chip", definition:"Miniaturized devices performing lab assays with low reagent volume."},
+    {term:"Lavaging", definition:"Sampling method (e.g., for lungs, biological fluids) in experiments."},
+    {term:"Log2 Fold Change", definition:"Logarithmic measure of expression change between two conditions."},
+    {term:"Magnetorotational Bioreactor", definition:"Hardware to simulate gravity by rotation and magnetic control."},
+    {term:"Metabolomics", definition:"Comprehensive profiling of small-molecule metabolites in biological samples."},
+    {term:"Microbiome", definition:"The collection of microorganisms and their genes in an environment."},
+    {term:"Microgravity", definition:"Near weightless conditions experienced on orbiting platforms."},
+    {term:"Mitochondrial Dysfunction", definition:"Impaired cellular energy production often linked to space stress."},
+    {term:"Model Organism", definition:"Species used to study biological processes transferable to others."},
+    {term:"Morphology", definition:"Form and structure of cells or organisms; can change in microgravity."},
+    {term:"Multimodal Imaging", definition:"Combining imaging types (microscopy, MRI) for richer biological data."},
+    {term:"Nanopore Sequencing", definition:"Real-time DNA/RNA sequencing technology ideal for space missions."},
+    {term:"Negative Control", definition:"Sample without the experimental variable used to validate results."},
+    {term:"Neurovestibular", definition:"Systems involved in balance and orientation affected during spaceflight."},
+    {term:"Next-Generation Sequencing", definition:"High-throughput DNA sequencing tech producing massive datasets."},
+    {term:"Nuclear Magnetic Resonance (NMR)", definition:"Technique for molecular structure and metabolite identification."},
+    {term:"Omics Integration", definition:"Combining genomics/proteomics/metabolomics for holistic insights."},
+    {term:"Operon", definition:"Cluster of genes under common regulatory control in prokaryotes."},
+    {term:"Organoid", definition:"Mini-organs grown in vitro to model tissue-specific responses."},
+    {term:"Oxidative Stress", definition:"Damage from reactive oxygen species increased by radiation."},
+    {term:"Payload Interface", definition:"Mechanical/electrical specification connecting payload to spacecraft."},
+    {term:"Phenotype", definition:"Observable traits resulting from gene and environment interactions."},
+    {term:"Pharmacokinetics", definition:"How drugs are absorbed, distributed, metabolized, and excreted."},
+    {term:"PCR", definition:"Polymerase chain reaction — amplifies DNA fragments for analysis."},
+    {term:"Photonics", definition:"Light-based technologies used for sensing and imaging in space."},
+    {term:"Phylogeny", definition:"Evolutionary relationships between organisms reconstructed from sequences."},
+    {term:"Pilot Study", definition:"Small-scale experiment to test feasibility before full deployment."},
+    {term:"Plasmid", definition:"Circular DNA used to carry genes in genetic engineering."},
+    {term:"Proteomics", definition:"Large-scale study of proteins, their modifications, and interactions."},
+    {term:"Pulse-Chase", definition:"Labeling technique to track molecular turnover and dynamics."},
+    {term:"Quantitative PCR (qPCR)", definition:"PCR method providing quantification of target nucleic acids."},
+    {term:"Radiobiology", definition:"Study of radiation effects on living organisms and DNA repair."},
+    {term:"Reactive Oxygen Species (ROS)", definition:"Highly reactive molecules that can damage cellular components."},
+    {term:"Reference Genome", definition:"Standard sequence to align and compare reads for analysis."},
+    {term:"Replicates", definition:"Independent repeats of experiments to estimate variability."},
+    {term:"RNA-Seq", definition:"Sequencing of RNA transcripts to measure gene expression genome-wide."},
+    {term:"Scaffold", definition:"Contiguous assembled DNA sequence pieces from genome assembly."},
+    {term:"Single-Cell Sequencing", definition:"Profiling the transcriptome of individual cells for heterogeneity."},
+    {term:"Spaceflight-Induced Stress", definition:"Combined physiological stressors from microgravity and radiation."},
+    {term:"Space Environment Simulator", definition:"Ground-based system that mimics space conditions for testing."},
+    {term:"Stem Cell", definition:"Undifferentiated cell capable of giving rise to multiple cell types."},
+    {term:"Synapse Plasticity", definition:"Ability of neural connections to change with experience or stress."},
+    {term:"Systems Biology", definition:"Modeling and analysis of complex biological networks."},
+    {term:"Telomeres", definition:"Chromosome end caps that change with aging and stress."},
+    {term:"Tissue Engineering", definition:"Creating biological tissues for replacement or research."},
+    {term:"Transcriptome", definition:"Full set of RNA transcripts present in a cell or tissue."},
+    {term:"Transcriptomics", definition:"Study of transcriptomes to understand gene activity changes."},
+    {term:"Transgenic", definition:"Organism genetically modified to carry foreign DNA."},
+    {term:"Turnaround Time", definition:"Time from experiment initiation to data/results availability."},
+    {term:"Validation", definition:"Process to confirm assays and analysis are accurate and reproducible."},
+    {term:"Viral Vector", definition:"Virus-based tool used to deliver genetic material into cells."},
+    {term:"Wet Lab Automation", definition:"Robotic systems that automate pipetting, plating, and assays."},
+    {term:"Whole-Genome Sequencing", definition:"Sequencing an organism's entire DNA for comprehensive analysis."},
+    {term:"Xenobiology", definition:"Study or design of biological systems not found in nature; synthetic biology."},
+    {term:"Yield", definition:"Amount of product (e.g., RNA, protein) recovered from an experiment."},
+    {term:"Z-stack Imaging", definition:"Microscopy technique capturing multiple focal planes for 3D reconstruction."}
+  ];
+
+  const container = document.getElementById("glossaryContainer");
+  const searchInput = document.getElementById("searchInput");
+
+  // Render all items once (fast string build)
+  function renderGlossary(list) {
+    // use a single html string to minimize reflows
+    const html = list.map((item, idx) => `
+      <article class="term-card border border-green-400/25 p-6 rounded-2xl bg-black/50 hover:bg-black/80 hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(34,197,94,0.35)] transition-all duration-300 ease-out opacity-0 animate-fade-delay" style="animation-delay:${idx * 35}ms">
+        <h3 class="text-2xl font-semibold text-green-300 mb-2 tracking-wide">${item.term}</h3>
+        <p class="text-gray-300 text-sm leading-relaxed">${item.definition}</p>
+      </article>
+    `).join("");
+    container.innerHTML = html;
+  }
+
+  // Filtering (client-side)
+  function filterTerms() {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) {
+      renderGlossary(glossary);
+      return;
+    }
+    const filtered = glossary.filter(it => it.term.toLowerCase().includes(q) || it.definition.toLowerCase().includes(q));
+    renderGlossary(filtered);
+  }
+
+  // initial render
+  renderGlossary(glossary);
+
+  // ---------- Particles animation ----------
+  const canvas = document.getElementById("particles");
+  const ctx = canvas.getContext("2d");
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  let particles = [];
+  function initParticles(count = 80) {
+    particles = [];
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 2,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        alpha: 0.1 + Math.random() * 0.4
+      });
+    }
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of particles) {
+      ctx.fillStyle = `rgba(34,197,94,${p.alpha})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+    }
+    requestAnimationFrame(drawParticles);
+  }
+
+  initParticles(90);
+  drawParticles();
+</script>
+
+<style>
+  /* animations */
+  @keyframes fade-in-up { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
+  .animate-fade-in-up { animation: fade-in-up 700ms ease forwards; }
+  .animate-fade-in-slow { animation: fade-in-up 1200ms ease forwards; opacity: 0; }
+
+  @keyframes fade-delay { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
+  .animate-fade-delay { animation: fade-delay 600ms ease forwards; }
+
+  @keyframes pulse-slow { 0%,100% { opacity: 0.6 } 50% { opacity: 1 } }
+  .animate-pulse-slow { animation: pulse-slow 6s infinite ease-in-out; }
+
+  /* term card style */
+  .term-card { min-height: 90px; display: flex; flex-direction: column; justify-content: center; }
+  .term-card h3 { font-family: 'Orbitron', sans-serif; }
+</style>
+{% endblock %}

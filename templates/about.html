@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}About | Space BioSearch{% endblock %}
+
+{% block content %}
+<section class="relative min-h-screen text-white overflow-hidden flex flex-col items-center px-6 py-20">
+  <!-- Background -->
+  <div class="absolute inset-0 bg-cover bg-center"
+       style="background-image: url('{{ url_for('static', filename='images/about-bg.png') }}');"></div>
+  <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+
+  <!-- Content -->
+  <div class="relative z-10 w-full max-w-6xl mx-auto text-center animate-fade-in">
+    <!-- Title -->
+    <h1 class="text-5xl md:text-6xl font-extrabold text-green-400 mb-6 tracking-wide drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]">
+      Space Biology Knowledge Engine
+    </h1>
+    <p class="text-gray-300 text-lg max-w-3xl mx-auto mb-10 leading-relaxed">
+      <span class="text-green-300 font-semibold">Space BioSearch</span> is an initiative under the NASA Space Apps Challenge 2025.
+      Our mission is to make space biology data <strong>accessible, visual, and meaningful</strong>.
+      Enabling researchers to explore life’s behavior beyond Earth with clarity and precision.
+    </p>
+
+    <!-- Mission -->
+    <div class="bg-black/60 border border-green-500/30 backdrop-blur-md rounded-2xl p-8 md:p-10 mb-14 max-w-4xl mx-auto shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+      <h2 class="text-3xl font-bold text-green-300 mb-4">Our Vision</h2>
+      <p class="text-gray-300 text-base leading-relaxed">
+        In an era where humanity prepares for lunar habitats and Mars exploration, understanding biological adaptation
+        in microgravity is critical. We’ve designed Space BioSearch to simplify NASA’s biological datasets into
+        <span class="text-green-400 font-semibold">actionable insights</span> bridging data science and space biology.
+      </p>
+    </div>
+
+    <!-- Team -->
+    <h2 class="text-3xl font-bold text-green-300 mb-10">Meet the Team</h2>
+
+    <!-- Top 3 -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-16">
+      <div class="team-card">
+        <img src="{{ url_for('static', filename='images/yugank.jpg') }}" alt="Yugank Das"
+             class="w-32 h-32 rounded-full mx-auto mb-4 border-2 border-green-400 shadow-lg shadow-green-400/30">
+        <h3 class="text-xl font-bold text-green-400 mb-1">Yugank Das</h3>
+        <p class="text-gray-300 font-medium">Team Leader / Assistant Developer</p>
+        <a href="https://www.linkedin.com/in/yugank-das-480089360/" target="_blank"
+           class="text-sm text-green-400 hover:text-green-300 mt-2 inline-block">View Profile →</a>
+      </div>
+
+      <div class="team-card">
+        <img src="{{ url_for('static', filename='images/het.jpg') }}" alt="Het Balchandani"
+             class="w-32 h-32 rounded-full mx-auto mb-4 border-2 border-green-400 shadow-lg shadow-green-400/30">
+        <h3 class="text-xl font-bold text-green-400 mb-1">Het Balchandani</h3>
+        <p class="text-gray-300 font-medium">Lead Developer</p>
+        <a href="https://www.linkedin.com/in/het-balchandani/" target="_blank"
+           class="text-sm text-green-400 hover:text-green-300 mt-2 inline-block">View Profile →</a>
+      </div>
+
+      <div class="team-card">
+        <img src="{{ url_for('static', filename='images/kabir.jpg') }}" alt="Kabir Ahmed Shah"
+             class="w-32 h-32 rounded-full mx-auto mb-4 border-2 border-green-400 shadow-lg shadow-green-400/30">
+        <h3 class="text-xl font-bold text-green-400 mb-1">Nongjaimayum Kabir Ahmed Shah</h3>
+        <p class="text-gray-300 font-medium">Lead Developer</p>
+        <a href="https://www.linkedin.com/in/nongjaimayum-kabir-7901932ab/" target="_blank"
+           class="text-sm text-green-400 hover:text-green-300 mt-2 inline-block">View Profile →</a>
+      </div>
+    </div>
+
+    <!-- Bottom 2 (Centered) -->
+    <div class="flex flex-wrap justify-center gap-10 mb-16">
+      <div class="team-card w-72">
+        <img src="{{ url_for('static', filename='images/kamaal.jpg') }}" alt="Kamaal Solanki"
+             class="w-32 h-32 rounded-full mx-auto mb-4 border-2 border-green-400 shadow-lg shadow-green-400/30">
+        <h3 class="text-xl font-bold text-green-400 mb-1">Kamaal Solanki</h3>
+        <p class="text-gray-300 font-medium">UI/UX Specialist</p>
+        <a href="https://www.linkedin.com/in/kamaal-solanki-05b820200/" target="_blank"
+           class="text-sm text-green-400 hover:text-green-300 mt-2 inline-block">View Profile →</a>
+      </div>
+
+      <div class="team-card w-72">
+        <img src="{{ url_for('static', filename='images/krithik.jpg') }}" alt="Krithik Yadav"
+             class="w-32 h-32 rounded-full mx-auto mb-4 border-2 border-green-400 shadow-lg shadow-green-400/30">
+        <h3 class="text-xl font-bold text-green-400 mb-1">Krithik Yadav</h3>
+        <p class="text-gray-300 font-medium">Data Cleaner / Research Support</p>
+        <a href="#" class="text-sm text-green-400 hover:text-green-300 mt-2 inline-block">View Profile →</a>
+      </div>
+    </div>
+
+    <!-- Quote -->
+    <blockquote class="max-w-3xl mx-auto text-gray-300 italic text-lg border-l-4 border-green-400 pl-4">
+      “We are not just decoding data.We are understanding how life itself evolves beyond Earth.”
+    </blockquote>
+
+    <p class="mt-10 text-sm text-gray-500">
+      © 2025 <span class="text-green-400 font-semibold">Team Victorious Secrets</span> • Built for NASA Space Apps Challenge.
+    </p>
+  </div>
+</section>
+
+<style>
+  .team-card {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(6px);
+  }
+  .team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px rgba(34, 197, 94, 0.3);
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 1.2s ease forwards;
+  }
+</style>
+{% endblock %}
